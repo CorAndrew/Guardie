@@ -6,18 +6,16 @@ using System.Threading.Tasks;
 
 namespace Guardie
 {
-    public class Pedone
+    public class Pedone : Personaggio
     {
-        public string Nome { get; set; }
-
-        public Pedone(string nome)
+        public Pedone(string nome) : base(nome)
         {
-            Nome = nome;
         }
 
-        public void Re_Attaccato(string nomeRe)
+        public override void OnAttaccare(object sender, EventArgs e)
         {
-            Console.WriteLine("Il Pedone " + Nome + " si sta preparando");
+            string frase = "Il Pedone " + Nome + " si sta preparando";
+            Comunica(frase);
         }
     }
 }

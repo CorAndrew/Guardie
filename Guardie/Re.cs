@@ -6,29 +6,16 @@ using System.Threading.Tasks;
 
 namespace Guardie
 {
-    public class Re
+    public class Re : Personaggio
     {
-        public delegate void ReAttaccatoHandler(string nomeRe);
-        public string Nome { get; set; }
-        public event ReAttaccatoHandler Attaccato;
-
-        public Re(string nome)
+        public Re(string nome) : base(nome)
         {
-            Nome = nome;
         }
 
-        protected virtual void OnAttaccato()
+        public override void OnAttaccare(object sender, EventArgs e)
         {
-            if (Attaccato != null)
-            {
-                Attaccato(Nome);
-            }
-        }
-
-        public string SubisciAttacco()
-        {
-            OnAttaccato();
-            return "Il Re " + Nome + " è sotto attacco";
+            string frase = "Il Re " + Nome + " è sotto attacco";
+            Comunica(frase);
         }
     }
 }

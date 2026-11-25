@@ -6,18 +6,16 @@ using System.Threading.Tasks;
 
 namespace Guardie
 {
-    public class Guardia
+    public class Guardia : Personaggio
     {
-        public string Nome { get; set; }
-
-        public Guardia(string nome)
+        public Guardia(string nome) : base(nome)
         {
-            Nome = nome;
         }
 
-        public void Re_Attaccato(string nomeRe)
+        public override void OnAttaccare(object sender, EventArgs e)
         {
-            Console.WriteLine("La Guardia " + Nome + " sta difendendo");
+            string frase = "La Guardia " + Nome + " sta difendendo";
+            Comunica(frase);
         }
     }
 }

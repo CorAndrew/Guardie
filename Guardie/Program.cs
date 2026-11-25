@@ -9,76 +9,98 @@ namespace Guardie
 {
     internal class Program
     {
+        const string FileInput = "input.txt";
+        const string FileOutput = "output.txt";
+
+        static Gestionale gestore;
+        static List<Guardia> listaGuardie;
+        static List<Pedone> listaPedoni;
+
         static void Main(string[] args)
         {
-            string[] righe = File.ReadAllLines("commands.txt");
-            File.WriteAllText("output.txt", "");
+            File.WriteAllText(FileOutput, "");
 
-            Re re = new Re(righe[0]);
+            gestore = new Gestionale();
+            listaGuardie = new List<Guardia>();
+            listaPedoni = new List<Pedone>();
 
-            List<Guardia> guardie = new List<Guardia>();
-            string[] nomiGuardie = righe[1].Split(' ');
-            for (int i = 0; i < nomiGuardie.Length; i++)
+            gestore.Guardie = listaGuardie;
+            gestore.Pedoni = listaPedoni;
+            gestore.Cattura += Gestore_Cattura;
+
+            string[] righe = File.ReadAllLines(FileInput);
+
+            if (righe.Length > 0)
             {
-                Guardia g = new Guardia(nomiGuardie[i]);
-                guardie.Add(g);
-                re.Attaccato += g.Re_Attaccato;
+                Re re = new Re(righe[0].Trim());
+                gestore.Sovrano = re;
+                re.Messaggio += Personaggio_Messaggio;
+                gestore.Attaccare += re.OnAttaccare;
             }
 
-            List<Pedone> pedoni = new List<Pedone>();
-            string[] nomiPedoni = righe[2].Split(' ');
-            for (int i = 0; i < nomiPedoni.Length; i++)
+            if (righe.Length > 1 && righe[1].Trim() != "")
             {
-                Pedone p = new Pedone(nomiPedoni[i]);
-                pedoni.Add(p);
-                re.Attaccato += p.Re_Attaccato;
-            }
-
-            for (int i = 3; i < righe.Length; i++)
-            {
-                string cmd = righe[i];
-                Console.WriteLine("> " + cmd);
-
-                if (cmd == "End")
+                string[] nomiGuardie = righe[1].Trim().Split(' ');
+                for (int i = 0; i < nomiGuardie.Length; i++)
                 {
-                    Console.WriteLine("Simulazione terminata");
-                    break;
-                }
-                else if (cmd == "Attacca Re")
-                {
-                    string fraseRe = re.SubisciAttacco();
-                    Console.WriteLine(fraseRe);
-                    File.AppendAllText("output.txt", fraseRe + Environment.NewLine);
-                }
-                else if (cmd.StartsWith("Cattura "))
-                {
-                    string nomeDaCatturare = cmd.Substring(8);
-
-                    for (int g = 0; g < guardie.Count; g++)
+                    if (nomiGuardie[i] != "")
                     {
-                        if (guardie[g].Nome == nomeDaCatturare)
-                        {
-                            re.Attaccato -= guardie[g].Re_Attaccato;
-                            guardie.RemoveAt(g);
-                            break;
-                        }
-                    }
-
-                    for (int p = 0; p < pedoni.Count; p++)
-                    {
-                        if (pedoni[p].Nome == nomeDaCatturare)
-                        {
-                            re.Attaccato -= pedoni[p].Re_Attaccato;
-                            pedoni.RemoveAt(p);
-                            break;
-                        }
+                        Arruola("Guardia", nomiGuardie[i]);
                     }
                 }
-                else
+            }
+
+            if (righe.Length > 2 && righe[2].Trim() != "")
+            {
+                string[] nomiPedoni = righe[2].Trim().Split(' ');
+                for (int i = 0; i < nomiPedoni.Length; i++)
                 {
-                    Console.WriteLine("Comando non valido");
+                    if (nomiPedoni[i] != "")
+                    {
+                        Arruola("Pedone", nomiPedoni[i]);
+                    }
                 }
             }
+
+            gestore.CaricaComandi(righe, 3);
+
+            while (gestore.EseguiProssimo())
+            {
+            }
+        }
+
+        static void Arruola(string ruolo, string nome)
+        {
+            if (ruolo == "Guardia")
+            {
+                Guardia g = new Guardia(nome);
+                listaGuardie.Add(g);
+                g.Messaggio += Personaggio_Messaggio;
+                gestore.Attaccare += g.OnAttaccare;
+            }
+            else if (ruolo == "Pedone")
+            {
+                Pedone p = new Pedone(nome);
+                listaPedoni.Add(p);
+                p.Messaggio += Personaggio_Messaggio;
+                gestore.Attaccare += p.OnAttaccare;
+            }
+        }
+
+        static void Personaggio_Messaggio(object sender, string frase)
+        {
+            Console.WriteLine(frase);
+
+            Re reMittente = sender as Re;
+            if (reMittente != null)
+            {
+                File.AppendAllText(FileOutput, frase + Environment.NewLine);
+            }
+        }
+
+        static void Gestore_Cattura(object sender, string nome)
+        {
+            Console.WriteLine("Cattura " + nome);
         }
     }
 }
